@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Will you be my Valentine?</title>
+
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+<style>
+:root {
+  --bg1:#ffd6e7; --bg2:#ffeef6; --card:#ffffffcc;
+  --yes:#ff3b7a; --yesHover:#ff1f68;
+}
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  min-height:100vh;
+  min-height:100svh;
+  display:grid;
+  place-items:center;
+  background:radial-gradient(circle at top,var(--bg2),var(--bg1));
+  font-family:system-ui,sans-serif;
+  overflow:hidden;
+  padding:16px;
+}
+
+#confettiCanvas{
+  position:fixed; inset:0;
+  width:100vw; height:100vh;
+  pointer-events:none;
+  z-index:9999;
+}
+
+.card{
+  width:min(720px,92vw);
+  padding:26px 22px;
+  background:var(--card);
+  backdrop-filter:blur(10px);
+  border-radius:22px;
+  text-align:center;
+  box-shadow:0 18px 60px rgba(0,0,0,.15);
+}
+
+h1{font-size:clamp(26px,4vw,44px)}
+
+.button-zone{
+  position:relative;
+  width:min(520px,92%);
+  height:150px;
+  margin:0 auto;
+  touch-action:none;
+}
+
+button{
+  position:absolute;
+  top:50%;
+  padding:16px 24px;
+  font-size:18px;
+  font-weight:800;
+  border-radius:999px;
+  border:none;
+  cursor:pointer;
+  box-shadow:0 10px 24px rgba(0,0,0,.14);
+  transition:transform .15s ease, background .15s ease, left .25s ease, top .25s ease;
+}
+
+#yesBtn{
+  left:18%;
+  transform:translateY(-50%);
+  background:var(--yes);
+  color:#fff;
+}
+#yesBtn:hover{background:var(--yesHover)}
+
+#noBtn{
+  left:62%;
+  transform:translateY(-50%);
+  background:#e5e7eb;
+}
+
+.hint{font-size:13px;opacity:.7;margin-top:8px}
+
+.result{display:none;animation:pop .35s ease}
+.share{
+  margin-top:12px;
+  display:inline-block;
+  padding:12px 20px;
+  border-radius:999px;
+  background:#25D366;
+  color:white;
+  text-decoration:none;
+  font-weight:700;
+}
+
+@keyframes pop{
+  from{transform:scale(.95);opacity:0}
+  to{transform:scale(1);opacity:1}
+}
+</style>
+</head>
+
+<body>
+<canvas id="confettiCanvas"></canvas>
+
+<main class="card">
+<h1>BABE will you be my Valentine? 💖</h1>
+
+<section class="button-zone" id="zone">
+  <button id="yesBtn">Yes</button>
+  <button id="noBtn">No</button>
+</section>
+
+<div class="hint" id="hint">No is just playing hard to get 😈</div>
+
+<section class="result" id="result">
+  <h2>YAY! 🎉💘</h2>
+  <a class="share" id="shareBtn" target="_blank">Share on WhatsApp</a>
+</section>
+</main>
+
+<!-- Cute pop sound -->
+<audio id="popSound" preload="auto">
+  <source src="https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.mp3">
+</audio>
+
+<script>
+const zone = document.getElementById("zone");
+const yesBtn = document.getElementById("yesBtn");
+const noBtn = document.getElementById("noBtn");
+const result = document.getElementById("result");
+const hint = document.getElementById("hint");
+const popSound = document.getElementById("popSound");
+const shareBtn = document.getElementById("shareBtn");
+
+let yesScale = 1;
+let escapeCount = 0;
+
+/* CONFETTI */
+const confettiCanvas = document.getElementById("confettiCanvas");
+const confettiInstance = confetti.create(confettiCanvas,{resize:true,useWorker:true});
+
+function celebrate(){
+  confettiInstance({particleCount:300,spread:140,startVelocity:60});
+}
+
+/* NO BUTTON ESCAPE */
+function clamp(n,min,max){return Math.max(min,Math.min(max,n));}
+
+zone.addEventListener("pointermove",e=>{
+  const b=noBtn.getBoundingClientRect();
+  const d=Math.hypot(b.left+b.width/2-e.clientX,b.top+b.height/2-e.clientY);
+  if(d<140){
+    escapeCount++;
+    yesScale=Math.min(2.3,yesScale+.12);
+    yesBtn.style.transform=`translateY(-50%) scale(${yesScale})`;
+
+    const z=zone.getBoundingClientRect();
+    let x=Math.random()*(z.width-b.width);
+    let y=Math.random()*(z.height-b.height);
+
+    noBtn.style.left=clamp(x,0,z.width-b.width)+"px";
+    noBtn.style.top=clamp(y,0,z.height-b.height)+"px";
+    noBtn.style.transform="none";
+
+    if(escapeCount>=7){
+      yesBtn.click(); // destiny 😌
+    }
+  }
+});
+
+/* YES CLICK */
+yesBtn.addEventListener("click",()=>{
+  zone.style.display="none";
+  hint.style.display="none";
+  result.style.display="block";
+  popSound.play();
+  celebrate();
+
+  const msg="I said YES! 💖🥰";
+  shareBtn.href=`https://wa.me/?text=${encodeURIComponent(msg)}`;
+});
+</script>
+</body>
+</html>
